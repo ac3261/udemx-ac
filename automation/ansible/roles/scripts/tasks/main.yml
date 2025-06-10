@@ -1,0 +1,49 @@
+---
+- name: Ensure cron is installed
+  apt:
+    name: cron
+    state: present
+    update_cache: yes
+
+- name: Create script directory
+  file:
+    path: /opt/scripts
+    state: directory
+    mode: '0755'
+
+- name: Copy MySQL dump script
+  copy:
+    src: files/mysql_backup.sh
+    dest: /opt/scripts/mysql_backup.sh
+    mode: '0755'
+
+- name: Add cron job for MySQL dump
+  cron:
+    name: "Daily MySQL container backup"
+    job: "/opt/scripts/mysql_backup.sh"
+    minute: "0"
+    hour: "2"
+
+- name: Copy log modification listing script
+  copy:
+    src: files/list_mod_files.sh
+    dest: /opt/scripts/list_mod_files.sh
+    mode: '0755'
+
+- name: Copy last 5 days log file finder script
+  copy:
+    src: files/list_last_five.sh
+    dest: /opt/scripts/list_last_five.sh
+    mode: '0755'
+
+- name: Copy load average script
+  copy:
+    src: files/loadavg.sh
+    dest: /opt/scripts/loadavg.sh
+    mode: '0755'
+
+- name: Copy NGINX title fixer script
+  copy:
+    src: files/fix_nginx_title.sh
+    dest: /opt/scripts/fix_nginx_title.sh
+    mode: '0755'

@@ -1,0 +1,13 @@
+# Dockerfile content to build custom jenkins image with docker cli.
+FROM jenkins/jenkins:lts-jdk17
+
+USER root
+
+RUN apt-get update && \
+    apt-get install -y docker.io && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN groupmod -g 113 docker || (groupadd -g 113 docker && usermod -aG docker jenkins) && \
+    usermod -aG docker jenkins
+
+USER jenkins

@@ -1,0 +1,51 @@
+---
+
+- name: Install NGINX
+  apt:
+    name: nginx
+    state: present
+    update_cache: true
+
+- name: Remove default nginx site
+  file:
+    path: /var/www/html/index.nginx-debian.html
+    state: absent
+
+- name: Deploy custom index.html
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+    owner: www-data
+    group: www-data
+    mode: '0644'
+
+- name: Ensure NGINX is started and enabled
+  service:
+    name: nginx
+    state: started
+    enabled: true
+
+- name: Create SSL directory
+  file:
+    path: /etc/nginx/ssl
+    state: directory
+    mode: '0755'
+
+- name: Generate self-signed SSL certificate
+  command: >
+    openssl req -x509 -nodes -days 365
+    -newkey rsa:2048
+    -keyout /etc/nginx/ssl/udemx.key
+    -out /etc/nginx/ssl/udemx.crt
+    -subj "/C=HU/ST=Budapest/L=Budapest/O=UDEMX/CN=udemx.local"
+  args:
+    creates: /etc/nginx/ssl/udemx.crt
+
+- name: Deploy HTTPS-enabled NGINX config
+  template:
+    src: default-ssl.conf.j2
+    dest: /etc/nginx/sites-available/default
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart NGINX

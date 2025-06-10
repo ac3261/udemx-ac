@@ -1,0 +1,32 @@
+version: '3.3'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    container_name: jenkins
+    restart: on-failure
+    ports:
+      - "8082:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+
+  registry:
+    image: registry:2
+    container_name: udemx-registry
+    restart: always
+    ports:
+      - "5000:5000"
+
+  registry-ui:
+    image: joxit/docker-registry-ui:static
+    container_name: registry-ui
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      - REGISTRY_TITLE=UDEMX Private Registry
+      - REGISTRY_URL=http://localhost:5000/v2
+
+volumes:
+  jenkins_home:

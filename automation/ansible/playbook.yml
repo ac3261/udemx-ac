@@ -1,0 +1,15 @@
+- name: System provisioning
+  hosts: all
+  become: yes
+
+  roles:
+    - common
+    - users
+    - ssh
+    - fail2ban
+#    - nginx
+#    - mariadb
+    - docker
+    - docker-compose
+    - jenkins
+    - scripts

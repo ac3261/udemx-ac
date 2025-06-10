@@ -1,0 +1,11 @@
+---
+- name: Create udemx user with custom home and sudo access
+  user:
+    name: udemx
+    home: /opt/udemx
+    shell: /bin/bash
+    create_home: yes
+    groups: sudo
+    append: yes
+    password: "{{ 'Alma1234' | password_hash('sha512') }}"
+    state: present

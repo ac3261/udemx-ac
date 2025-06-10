@@ -1,0 +1,21 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "debian/bullseye64"
+  config.vm.hostname = "udemx-automation"
+  config.vm.network "private_network", ip: "192.168.56.11"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = 2048
+    vb.cpus = 2
+  end
+
+  # Install Ansible in the guest
+  config.vm.provision "shell", inline: <<-SHELL
+    apt-get update
+    apt-get install -y ansible python3-apt
+  SHELL
+
+  # Run Ansible playbook (inside guest)
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook = "/vagrant/ansible/playbook.yml"
+  end
+end

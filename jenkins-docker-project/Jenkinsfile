@@ -1,0 +1,48 @@
+pipeline {
+  agent any
+
+  environment {
+    REGISTRY = '192.168.1.49:5000'
+    IMAGE_NAME = 'ac-docs'
+    IMAGE_TAG = "${env.BUILD_NUMBER}"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build Docker Image') {
+      steps {
+        script {
+          docker.build("${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}")
+        }
+      }
+    }
+
+    stage('Push to Registry') {
+      steps {
+        script {
+          sh "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+        }
+      }
+    }
+
+    stage('Deploy to Remote Host') {
+      steps {
+        sshagent (credentials: ['f80f65a3-6952-4ba9-92e3-b86045899faa']) {
+          sh """
+            ssh -o StrictHostKeyChecking=no user@your-remote-vm-ip << EOF
+              docker pull ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+              docker stop ude-deb || true
+              docker rm ude-deb || true
+              docker run -d --name ude-deb -p 80:80 ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+            EOF
+          """
+        }
+      }
+    }
+  }
+}

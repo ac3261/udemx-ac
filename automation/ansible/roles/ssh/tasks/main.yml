@@ -1,0 +1,43 @@
+---
+- name: Change SSH port in sshd_config
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?Port\s+\d+'
+    line: 'Port 2222'
+    state: present
+    backup: yes
+
+- name: Disable password authentication
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication\s+\w+'
+    line: 'PasswordAuthentication no'
+    state: present
+
+- name: Enable public key authentication
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PubkeyAuthentication\s+\w+'
+    line: 'PubkeyAuthentication yes'
+    state: present
+
+- name: Ensure .ssh directory exists for udemx
+  file:
+    path: /opt/udemx/.ssh
+    state: directory
+    owner: udemx
+    group: udemx
+    mode: '0700'
+
+- name: Copy public key to udemx user
+  copy:
+    src: ssh/udemx_key.pub
+    dest: /opt/udemx/.ssh/authorized_keys
+    owner: udemx
+    group: udemx
+    mode: '0600'
+
+#- name: Restart SSH service to apply changes
+#  service:
+#    name: ssh
+#    state: restarted

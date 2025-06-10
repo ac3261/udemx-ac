@@ -1,0 +1,51 @@
+---
+- name: Ensure required packages are installed
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+    - docker.io
+    - docker-compose
+    - openssl
+
+- name: Create necessary directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /opt/udemx/html
+    - /opt/udemx/ssl
+
+- name: Deploy index.html template
+  template:
+    src: index.html.j2
+    dest: /usr/share/nginx/html/index.html
+    mode: '0644'
+
+- name: Generate self-signed SSL certificate
+  command: >
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048
+    -keyout /opt/udemx/ssl/udemx.key
+    -out /opt/udemx/ssl/udemx.crt
+    -subj "/CN=localhost"
+  args:
+    creates: /opt/udemx/ssl/udemx.crt
+
+- name: Deploy NGINX HTTPS config
+  template:
+    src: default-ssl.conf.j2
+    dest: /opt/udemx/default-ssl.conf
+    mode: '0644'
+
+- name: Deploy docker-compose.yml from template
+  template:
+    src: docker-compose.yml.j2
+    dest: /opt/udemx/docker-compose.yml
+    mode: '0644'
+
+- name: Start NGINX container
+  command: docker-compose up -d
+  args:
+    chdir: /opt/udemx

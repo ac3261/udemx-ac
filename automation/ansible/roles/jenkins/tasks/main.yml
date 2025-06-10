@@ -1,0 +1,27 @@
+---
+- name: Ensure required packages are installed
+  apt:
+    name:
+      - docker.io
+      - docker-compose
+      - git
+      - curl
+    state: present
+    update_cache: yes
+
+- name: Create jenkins_registry working directory
+  file:
+    path: /opt/udemx/jenkins_registry
+    state: directory
+    mode: '0755'
+
+- name: Deploy docker-compose.yml
+  copy:
+    src: docker-compose.yml
+    dest: /opt/udemx/jenkins_registry/docker-compose.yml
+    mode: '0644'
+
+- name: Start Jenkins + Registry + UI containers
+  command: docker-compose up -d
+  args:
+    chdir: /opt/udemx/jenkins_registry

@@ -1,0 +1,33 @@
+---
+- name: Force sync time from NTP without requiring ntpdate installed
+  shell: |
+    apt-get update -o Acquire::Check-Valid-Until=false
+    apt-get install -y ntpdate
+    ntpdate -u pool.ntp.org
+  args:
+    warn: false
+  become: true
+
+- name: Apt update
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Upgrade packages
+  apt:
+    upgrade: dist
+    autoremove: yes
+
+- name: Install basic tools
+  apt:
+    name:
+      - sudo
+      - curl
+      - wget
+      - htop
+      - mc
+      - unzip
+      - gnupg
+      - lsb-release
+      - vim
+    state: present

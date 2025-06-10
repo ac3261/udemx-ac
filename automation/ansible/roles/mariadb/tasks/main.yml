@@ -1,0 +1,31 @@
+---
+- name: Install MariaDB server and client
+  apt:
+    name:
+      - mariadb-server
+      - mariadb-client
+    state: present
+    update_cache: yes
+
+- name: Install Python MySQL driver (pymysql)
+  apt:
+    name: python3-pymysql
+    state: present
+
+- name: Ensure MariaDB service is started and enabled
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: Create udemx database
+  shell: |
+    mysql -e "CREATE DATABASE IF NOT EXISTS \`udemx-db\`;"
+  become: true
+
+- name: Create udemx user and grant permissions
+  shell: |
+    mysql -e "CREATE USER IF NOT EXISTS 'udemx'@'localhost' IDENTIFIED BY 'Alma1234';
+              GRANT ALL PRIVILEGES ON \`udemx-db\`.* TO 'udemx'@'localhost';
+              FLUSH PRIVILEGES;"
+  become: true
